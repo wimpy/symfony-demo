@@ -1,0 +1,13 @@
+---
+
+- hosts: localhost
+  connection: local
+  vars:
+    wimpy_application_name: "symfony-demo"
+    wimpy_application_port: 80
+    wimpy_aws_elb_healthcheck_ping_path: "/web/"
+    wimpy_aws_hosted_zone_name: "armesto.net"
+  roles:
+    - role: wimpy.environment
+    - role: wimpy.build
+    - role: wimpy.deploy
