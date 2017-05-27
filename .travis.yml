@@ -8,19 +8,16 @@ cache:
   directories:
     - $HOME/.composer/cache/files
 
-before_install:
+install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-engine
   - if [[ "$TRAVIS_PHP_VERSION" != "hhvm" ]]; then phpenv config-rm xdebug.ini; fi
-  - composer self-update
+  - composer install
 
 env:
   global:
     - secure: "I72oMKIXO4rf/XCp2BKUbeMZY5GPqhgpBhVi3ISBfPK1lmdqy8Ju2xy0Rvh4dqGdeTxDAciFPjFfGsXdsxtBGz5X4rxgHIVcu8tW8lhnCWFIocwTJHSebEGmAUt2yvz43vNjp1cBRo9wyQkqWxe9VrphhnZeW4tFEDgzxzXXjjTQstIgN2I0C2eRm05+iALzWmojD9FmeUqkVrqfPK1nULV7hlRG9cPJisQvBa2IPjGTE/+ZlpTuBDae3rllyr6374osgCe3XNwHNSTRDUZwEYCAB7h5ZJ2rz52cTLWjr8RGUVcpIMShF3KvLN4trl6m3pmQh44YwOLGQPTKFK5Yy8JpSMI+3liuu8KTV+I4j5oalbaX5TLXlFW7bYUyGWGcS3dzMIQoI0+mmEENkHCXdfvqg3TxRT85TBmdZsM+F7c7e0rsHusOt8rBrFgrUwbGpl0JubmFmxAdze3PM2EUwyBdOWWXV4c9m4h8oF/1RIfmx3XmM+ZCQSCZE4Nellkk9xrLlLk4+/vn6qm6XEURXjLfzB8ghHbD9MzGE7/4ebRv4hueYsXRs35fyNsTprcJpcWoFR/s8pVMoIyKLiaskUaMZVsuzRWCZUXaiwFOEb9eBCrrNKgUuNj4zINaiVkuuC6D8gE1iijvL110JQGl0xfKs/gCoGYB7uCoRjbDkTM=" # AWS_ACCESS_KEY_ID
     - secure: "Q+P0D9BTTrlUjCI56FnL9YpcqCOnMNDjXGDMzpDcqrKpYkzuWxUnwPEPGDyFKHWH5q8X4W4pSSvHURNc5e81UmQSCxPFtKs1ymNOlWSUXPoOuNStLEoh+JZ0e0GlZoP2Ohw5APD9O+v5gZcbzGsbw0H5+iHx89Pbo5lJp6hSaakzfUueTRQ0w8SkAAofNrAg041CU10vA40yubJ9yidoDapu7ZwCqhzz0tn+ML9hOHKD2QqxVcoqQ/QlRYygxNaupU1SnSqF8pUHfZXjvSOhbAF8IW40D+xXoOE0auNw97LRrJ0mEh8yhechTwRzzFyAXalH3qLffcLfFWi5ShnVSPQry6NO60t5WzgVbSKySZ7IAWJPLhjiIqYQcRhGKsLm9ehRoI2XwmdlXaqBHIyI2i2w6QR++C/soY6cvd0DSBZWKqWblIS52XShA6Lfq1WDIBKk+JgmugdNyVTlQdpYwykkcivEvxPXti1l/4srbTHwrRPtkz36TNhV/8YiOq2/1mOdD5FQ8ZR7zpd4otDHPfCbMQzwDqVSisbqtJ0jQiw+Sagkd042sG4GW+NcJL2okzCTUigj/ZJHRD96IJ5xjcggSq+wk8DqKlBc698BTFY/zVot+zDPl6cpn1jfOF4ErCJH3YnT2r7zL1S/v6q7svRK28ozVZ0jzjIPjeMU+Q0=" # AWS_SECRET_ACCESS_KEY
-
-install:
-  - composer install
 
 script:
   - ./vendor/bin/phpunit
@@ -33,7 +30,21 @@ script:
   - ./bin/console lint:twig app/Resources @CodeExplorerBundle
   # this checks that the application doesn't use dependencies with known security vulnerabilities
   - ./bin/console security:check --end-point=http://security.sensiolabs.org/check_lock
-  # Deploy to AWS
-  - ./deploy.sh
 
+jobs:
+  include:
+    - stage: Deploy to staging
+      script: ./deploy/deploy.sh staging
 
+    - stage: Execute functional tests in staging
+      install: skip
+      script:
+        - curl "http://symfony-demo.armesto.net/"
+
+    - stage: Deploy to production
+      script: ./deploy/deploy.sh production
+
+    - stage: Execute functional tests in production
+      install: skip
+      script:
+        - curl "http://symfony-demo.armesto.net/"
