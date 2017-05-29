@@ -1,0 +1,3 @@
+---
+
+wimpy_aws_dns_name: "{{ wimpy_application_name }}.staging"

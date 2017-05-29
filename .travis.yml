@@ -40,7 +40,7 @@ jobs:
     - stage: Execute functional tests in staging
       install: skip
       script:
-        - curl "http://symfony-demo.armesto.net/"
+        - curl "http://symfony-demo.staging.armesto.net/"
 
     - stage: Deploy to production
       script: ./deploy.sh production

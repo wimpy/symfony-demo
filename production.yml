@@ -1,0 +1,4 @@
+---
+
+wimpy_aws_dns_name: "{{ wimpy_application_name }}"
+wimpy_docker_registry: "249370547432.dkr.ecr.eu-west-1.amazonaws.com/"
